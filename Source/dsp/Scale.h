@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cmath>
+#include <string>
 
 namespace madtune
 {
@@ -74,6 +75,15 @@ inline double snapToScale (double midi, const NoteMask& mask)
         }
     }
     return best;
+}
+
+// "C4" for MIDI 60.
+inline std::string noteName (int midiNote)
+{
+    static const char* names[] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+    const int pc = (midiNote % 12 + 12) % 12;
+    const int octave = (midiNote - pc) / 12 - 1;
+    return std::string (names[pc]) + std::to_string (octave);
 }
 
 } // namespace madtune

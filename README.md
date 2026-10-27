@@ -4,12 +4,12 @@ An Auto-Tune style pitch-correction plugin (VST3, Windows), built with JUCE and 
 
 ## Status
 
-Milestone 1: the plugin loads, shows its controls (Key, Scale, Retune speed,
-Humanize, Mix) and passes audio through unchanged. Pitch correction arrives in
-the next milestones:
+Milestone 2: the plugin detects the pitch of the incoming voice and shows the
+note, how many cents it is off, and which note of the chosen key and scale it
+would be corrected to. Audio still passes through unchanged. Milestones:
 
-1. Skeleton, parameters, scale snapping logic, Windows CI build (this)
-2. Pitch detection (YIN) with a pitch readout
+1. Skeleton, parameters, scale snapping logic, Windows CI build
+2. Pitch detection (YIN) with a pitch readout (this)
 3. Pitch shifting (PSOLA) by a fixed amount
 4. Snapping to the scale with retune speed and humanize
 5. Custom UI with a pitch graph; optional MIDI target notes and formant control

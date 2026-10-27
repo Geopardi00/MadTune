@@ -34,7 +34,8 @@ if(MADTUNE_BUILD_PLUGIN)
         VST3_CATEGORIES Fx Pitch Shift)
 
     target_sources(MadTune PRIVATE
-        Source/PluginProcessor.cpp)
+        Source/PluginProcessor.cpp
+        Source/PluginEditor.cpp)
 
     target_compile_definitions(MadTune PUBLIC
         JUCE_WEB_BROWSER=0
@@ -58,4 +59,8 @@ if(MADTUNE_BUILD_TESTS)
     add_executable(madtune_tests tests/ScaleTests.cpp)
     target_link_libraries(madtune_tests PRIVATE madtune_dsp)
     add_test(NAME madtune_tests COMMAND madtune_tests)
+
+    add_executable(madtune_pitch_tests tests/PitchDetectorTests.cpp)
+    target_link_libraries(madtune_pitch_tests PRIVATE madtune_dsp)
+    add_test(NAME madtune_pitch_tests COMMAND madtune_pitch_tests)
 endif()

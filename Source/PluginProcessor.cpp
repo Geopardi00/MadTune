@@ -1,5 +1,5 @@
 #include "PluginProcessor.h"
-#include "dsp/Scale.h"
+#include "PluginEditor.h"
 
 namespace ParamIDs
 {
@@ -68,6 +68,11 @@ void MadTuneProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
                                   (juce::uint32) getTotalNumOutputChannels() };
     mixer.prepare (spec);
     mixer.reset();
+
+    detector.prepare (sampleRate);
+    monoScratch.assign ((size_t) juce::jmax (1, samplesPerBlock), 0.0f);
+    detectedHz = 0.0f;
+    detectedConfidence = 0.0f;
     setLatencySamples (0);
 }
 
@@ -82,15 +87,43 @@ void MadTuneProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
     mixer.setWetMixProportion (params.getRawParameterValue (ParamIDs::mix)->load() / 100.0f);
     mixer.pushDrySamples (block);
 
-    // Milestone 1: the wet signal is the input untouched. Pitch detection and
-    // shifting replace this in the next milestones.
+    // Pitch detection runs on the mono sum of the input.
+    const int numChannels = getTotalNumInputChannels();
+    for (int start = 0; start < buffer.getNumSamples(); start += (int) monoScratch.size())
+    {
+        const int n = juce::jmin ((int) monoScratch.size(), buffer.getNumSamples() - start);
+        for (int i = 0; i < n; ++i)
+        {
+            float sum = 0.0f;
+            for (int ch = 0; ch < numChannels; ++ch)
+                sum += buffer.getSample (ch, start + i);
+            monoScratch[(size_t) i] = numChannels > 0 ? sum / (float) numChannels : 0.0f;
+        }
+
+        if (detector.push (monoScratch.data(), n))
+        {
+            const auto r = detector.getLatest();
+            detectedHz = r.frequency;
+            detectedConfidence = r.confidence;
+        }
+    }
+
+    // Milestone 2: the wet signal is still the input untouched. Pitch shifting
+    // replaces this in the next milestone.
 
     mixer.mixWetSamples (block);
 }
 
 juce::AudioProcessorEditor* MadTuneProcessor::createEditor()
 {
-    return new juce::GenericAudioProcessorEditor (*this);
+    return new MadTuneEditor (*this);
+}
+
+madtune::NoteMask MadTuneProcessor::getNoteMask() const
+{
+    const int key = (int) params.getRawParameterValue (ParamIDs::key)->load();
+    const int scale = (int) params.getRawParameterValue (ParamIDs::scale)->load();
+    return madtune::makeNoteMask (key, (madtune::ScaleType) scale);
 }
 
 void MadTuneProcessor::getStateInformation (juce::MemoryBlock& destData)
