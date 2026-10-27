@@ -23,11 +23,11 @@ Options > Preferences > Plug-ins > VST > Re-scan.
 
 ## Building locally (Windows)
 
-Needs Visual Studio 2022 (Desktop C++ workload) and CMake 3.22+. JUCE is
+Needs Visual Studio 2022 or newer (Desktop C++ workload) and CMake 3.22+. JUCE is
 downloaded automatically.
 
 ```
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake -S . -B build -A x64
 cmake --build build --config Release
 ctest --test-dir build -C Release
 ```
